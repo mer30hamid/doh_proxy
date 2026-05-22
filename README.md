@@ -127,14 +127,26 @@ If you want to add multiple providers or change the default list shown in the We
 Visit your deployed URL (e.g., `https://your-domain.com`) to use the visual DNS tester.
 
 ### API Endpoints
-Configure your DoH client (browser, router, or OS) with the following endpoints:
+Configure your DoH client (browser, router, or OS) with the following endpoints.
 
-- **Cloudflare**: `/api/doh/cloudflare`
-- **Google**: `/api/doh/google`
-- **AdGuard**: `/api/doh/adguard`
-- **DNS.SB**: `/api/doh/dnssb`
+Each built-in provider exposes its default endpoint plus optional
+format-specific sub-paths. The proxy is format-agnostic: it forwards the
+client's `Accept` header, so both the JSON API (`application/dns-json`) and
+the RFC 8484 wire format (`application/dns-message`, GET `?dns=` and POST)
+work transparently.
+
+| Provider | Default | JSON | Wire format (RFC 8484) |
+| -------- | ------- | ---- | ---------------------- |
+| **Cloudflare** | `/api/doh/cloudflare` | `/api/doh/cloudflare` | `/api/doh/cloudflare/dns-query` |
+| **Google** | `/api/doh/google` | `/api/doh/google/resolve` | `/api/doh/google/dns-query` |
+| **AdGuard** | `/api/doh/adguard` | `/api/doh/adguard/resolve` | `/api/doh/adguard/dns-query` |
+| **DNS.SB** | `/api/doh/dnssb` | `/api/doh/dnssb` | `/api/doh/dnssb/dns-query` |
+
 - **Custom**: `/api/doh/custom` (Requires `CUSTOM_DOH_URL`)
 - **Manual**: `/api/doh/manual?upstream=<url>`
+
+> The `manual` endpoint accepts only `http(s)` URLs and rejects upstreams that
+> resolve to private, loopback or link-local address space (SSRF protection).
 
 ### Health Check
 Send a `HEAD` request to any endpoint to verify service availability (returns 204 No Content).
